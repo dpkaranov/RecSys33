@@ -1,5 +1,11 @@
 from pydantic import BaseSettings
 
+import os
+
+TG_API_URL = 'https://api.telegram.org'
+
+SECRET_TOKEN = os.getenv('SECRET_KEY_TEAM33')
+ENVIRONMENT = os.getenv('ENVIRONMENT')
 
 class Config(BaseSettings):
 

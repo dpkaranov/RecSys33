@@ -1,50 +1,51 @@
+#import libraries
 from typing import List
-
-from fastapi import APIRouter, FastAPI
+from fastapi import APIRouter, FastAPI, HTTPException, Depends
+from fastapi.security import HTTPBearer
 from starlette.requests import Request
+from starlette.requests import Request
+from starlette import status
 from pydantic import BaseModel
-
-from service.api.exceptions import UserNotFoundError
+from service.api.exceptions import UserNotFoundError, ModelNotFoundError, UnauthorizedError
 from service.log import app_logger
+from service.api.auth import is_actual_credentials
+from service.models import *
 
+#initialise main variables
+BEARER = HTTPBearer()
+MODELS = get_models()
+router = APIRouter()
 
+#custom response model
 class RecoResponse(BaseModel):
     user_id: int
     items: List[int]
 
+#func for /health path
+@router.get(path="/health", tags=["Health"])
+async def root():
+    return {"message": "Have a nice day!"}
 
-router = APIRouter()
-
-
-@router.get(
-    path="/health",
-    tags=["Health"],
-)
-async def health() -> str:
-    return "I am alive"
-
-
-@router.get(
-    path="/reco/{model_name}/{user_id}",
-    tags=["Recommendations"],
-    response_model=RecoResponse,
-)
-async def get_reco(
-    request: Request,
-    model_name: str,
-    user_id: int,
-) -> RecoResponse:
+#func for /reco/{model_name}/{user_id} path
+@router.get(path = "/reco/{model_name}/{user_id}", tags=["Recommendations"], response_model = RecoResponse)
+async def get_reco(model_name:str, user_id:int, token:str = Depends(BEARER)) -> RecoResponse:
     app_logger.info(f"Request for model: {model_name}, user_id: {user_id}")
-
-    # Write your code here
-
+    #checking token
+    if not is_actual_credentials(token.credentials):
+        raise UnauthorizedError(error_message=f"Token is incorrect")
+    #checking user_id
     if user_id > 10**9:
         raise UserNotFoundError(error_message=f"User {user_id} not found")
-
-    k_recs = request.app.state.k_recs
-    reco = list(range(k_recs))
-    return RecoResponse(user_id=user_id, items=reco)
-
+    #checking model_name
+    if model_name not in MODELS.keys():
+        raise ModelNotFoundError(error_message=f"Model {model_name} not found")
+    try:
+        reco_list = MODELS[model_name]().get_reco(user_id)
+    except Exception as e:
+        raise HTTPException(
+            status_code=400, detail="Error on model initialization"
+        )
+    return RecoResponse(user_id = user_id, items = reco_list)
 
 def add_views(app: FastAPI) -> None:
     app.include_router(router)
