@@ -3,7 +3,6 @@ from typing import List
 from fastapi import APIRouter, FastAPI, HTTPException, Depends
 from fastapi.security import HTTPBearer
 from starlette.requests import Request
-from starlette.requests import Request
 from starlette import status
 from pydantic import BaseModel
 from service.api.exceptions import UserNotFoundError, ModelNotFoundError, UnauthorizedError
@@ -32,7 +31,7 @@ async def get_reco(model_name:str, user_id:int, token:str = Depends(BEARER)) -> 
     app_logger.info(f"Request for model: {model_name}, user_id: {user_id}")
     #checking token
     if not is_actual_credentials(token.credentials):
-        raise UnauthorizedError(error_message=f"Token is incorrect")
+        raise UnauthorizedError(error_message="Token is incorrect")
     #checking user_id
     if user_id > 10**9:
         raise UserNotFoundError(error_message=f"User {user_id} not found")
