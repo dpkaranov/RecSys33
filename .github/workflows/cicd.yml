@@ -16,3 +16,5 @@ jobs:
       - run: make setup
       - run: make lint
       - run: make test
+        env:
+          SECRET_TOKEN: '${{ secrets.SECRET_TOKEN }}'
