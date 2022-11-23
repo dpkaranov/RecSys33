@@ -1,7 +1,9 @@
 # import libraries
 import os
+
 import uvicorn
 from fastapi.openapi.utils import get_openapi
+
 from service.api.app import create_app
 from service.settings import get_config
 

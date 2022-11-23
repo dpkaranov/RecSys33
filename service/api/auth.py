@@ -3,15 +3,15 @@ import os
 from configparser import ConfigParser
 
 # initialise env variable
-env = os.getenv("ENV", "./.config")
-if env == "./.config":
+SECRET_TOKEN = os.getenv("SECRET_TOKEN")
+if SECRET_TOKEN is None:
     config = ConfigParser()
     config.read("./.config")
-    config = config["AUTH0"]
+    params = config["AUTH0"]
     # get var for token validation
-    SECRET_TOKEN = config["SECRET_TOKEN"]
+    SECRET_TOKEN = params["SECRET_TOKEN"]
 
 
 # func for token validation
-def is_actual_credentials(token):
+def is_actual_credentials(token) -> bool:
     return token == SECRET_TOKEN

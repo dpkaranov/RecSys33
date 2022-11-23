@@ -1,8 +1,8 @@
 # import libraries
 from typing import List
 
-from fastapi import APIRouter, Depends, FastAPI, HTTPException
-from fastapi.security import HTTPBearer
+from fastapi import APIRouter, FastAPI, HTTPException
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from pydantic import BaseModel
 
 from service.api.auth import is_actual_credentials
@@ -39,7 +39,7 @@ async def root():
     response_model=RecoResponse,
 )
 async def get_reco(
-    model_name: str, user_id: int, token: str = Depends(BEARER)
+    model_name: str, user_id: int, token: HTTPAuthorizationCredentials
 ) -> RecoResponse:
     app_logger.info(f"Request for model: {model_name}, user_id: {user_id}")
     # checking token
