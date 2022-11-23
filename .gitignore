@@ -66,4 +66,8 @@ venv.bak/
 # mypy
 .mypy_cache/
 
-
+# files
+.config
+.csv
+.pkl
+.h5
