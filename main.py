@@ -17,10 +17,14 @@ def custom_openapi():
     openapi_schema = get_openapi(
         title="Team33 RecSys Service",
         version="0.0.1",
-        description="This is a custom openapi of RecSys project made by team_33.",
+        description=(
+            "This is a custom openapi of RecSys project made by team_33."
+        ),
         routes=app.routes,
     )
-    openapi_schema["paths"]["/reco/{model_name}/{user_id}"]["get"]["responses"] = {
+    openapi_schema["paths"]["/reco/{model_name}/{user_id}"]["get"][
+        "responses"
+    ] = {
         "200": {
             "description": "Successful Response",
             "content": {
