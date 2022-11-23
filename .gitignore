@@ -71,3 +71,7 @@ venv.bak/
 .csv
 .pkl
 .h5
+
+# Custom dir
+/data/**
+!/data/.gitkeep
