@@ -10,6 +10,7 @@ from service.api.exceptions import (
     ModelNotFoundError,
     UnauthorizedError,
     UserNotFoundError,
+    ModelInitializationError,
 )
 from service.log import app_logger
 from service.models import get_models
@@ -47,18 +48,24 @@ async def get_reco(
     app_logger.info(f"Request for model: {model_name}, user_id: {user_id}")
     # checking token
     if not is_actual_credentials(token.credentials):
-        raise UnauthorizedError(error_message="Token is incorrect")
+        raise UnauthorizedError(
+            error_message="Token is incorrect"
+        )
     # checking user_id
     if user_id > 10**9:
-        raise UserNotFoundError(error_message=f"User {user_id} not found")
+        raise UserNotFoundError(
+            error_message=f"User {user_id} not found"
+        )
     # checking model_name
     if model_name not in MODELS.keys():
-        raise ModelNotFoundError(error_message=f"Model {model_name} not found")
+        raise ModelNotFoundError(
+            error_message=f"Model {model_name} not found"
+        )
     try:
-        reco_list = MODELS[model_name]().get_reco(user_id)
+        reco_list = MODELS[model_name].get_reco(user_id)
     except Exception:
-        raise HTTPException(
-            status_code=400, detail="Error on model initialization"
+        raise ModelInitializationError(
+            error_message="Error on model initialization"
         )
     return RecoResponse(user_id=user_id, items=reco_list)
 

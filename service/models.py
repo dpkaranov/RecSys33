@@ -62,7 +62,7 @@ class PopularModel:
         return list(self.model.recommend(users=[user_id], N=10)[0])
 
 
-MODELS = {"first_try": FirstTry, "popular_model": PopularModel}
+MODELS = {"first_try": FirstTry(), "popular_model": PopularModel()}
 
 
 def get_models() -> dict:

@@ -70,3 +70,15 @@ def test_get_reco_unauthorized(
         )
     assert response.status_code == HTTPStatus.UNAUTHORIZED
     assert response.json()["errors"][0]["error_key"] == "user_not_authorized"
+
+def test_get_reco_without_headers(
+    client: TestClient,
+) -> None:
+    user_id = 123
+    path = GET_RECO_PATH.format(model_name="first_try", user_id=user_id)
+    with client:
+        response = client.get(
+            path, headers=None
+        )
+    assert response.status_code == HTTPStatus.FORBIDDEN
+    assert response.json()["errors"][0]["error_key"] == "http_exception"
