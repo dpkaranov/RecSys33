@@ -1,7 +1,6 @@
 # import libraries
 from typing import List
 
-import pandas as pd
 from fastapi import APIRouter, Depends, FastAPI
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from pydantic import BaseModel
@@ -17,10 +16,6 @@ from service.log import app_logger
 from service.models import get_models
 
 # initialize main variables
-TRAIN = pd.read_csv(
-                "./service/data/interactions.csv",
-                parse_dates=["last_watch_dt"]
-)
 BEARER = HTTPBearer()
 MODELS = get_models()
 router = APIRouter()
