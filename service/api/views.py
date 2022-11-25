@@ -1,6 +1,7 @@
 # import libraries
 from typing import List
 
+import pandas as pd
 from fastapi import APIRouter, Depends, FastAPI
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from pydantic import BaseModel
@@ -16,7 +17,16 @@ from service.log import app_logger
 from service.models import get_models
 
 # initialize main variables
+TRAIN = pd.read_csv(
+                "./service/data/interactions.csv",
+                parse_dates=["last_watch_dt"]
+)
 BEARER = HTTPBearer()
+'''
+FIRST = FirstTry()
+POPULAR = PopularModel(TRAIN)
+MODELS_KEYS = ['first_try', 'popular_model']
+'''
 MODELS = get_models()
 router = APIRouter()
 
@@ -61,7 +71,7 @@ async def get_reco(
             error_message=f"Model {model_name} not found"
         )
     try:
-        reco_list = MODELS[model_name]().get_reco(user_id)
+        reco_list = MODELS[model_name].get_reco(user_id)
     except Exception:
         raise ModelInitializationError(
             error_message="Error on model initialization"

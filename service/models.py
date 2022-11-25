@@ -5,6 +5,11 @@ from itertools import cycle, islice
 import pandas as pd
 from pydantic import BaseModel
 
+TRAIN = pd.read_csv(
+                "./service/data/interactions.csv",
+                parse_dates=["last_watch_dt"]
+)
+
 
 class Error(BaseModel):
     error_key: str
@@ -40,25 +45,30 @@ class PopularRecommender:
         return list(islice(cycle([recs]), len(users)))
 
 
-class FirstTry:
-    def __init__(self):
+class OurModels:
+    def get_reco(self, user_id) -> list:
         pass
 
-    def get_reco(self, user_id):
+
+class FirstTry(OurModels):
+    def __init__(self) -> None:
+        pass
+
+    def get_reco(self, user_id) -> list:
         return random.sample(range(1, 20), 10)
 
 
-class PopularModel:
-    def __init__(self):
-        TRAIN = pd.read_csv(
-            "./service/data/interactions.csv", parse_dates=["last_watch_dt"]
-        )
+class PopularModel(OurModels):
+    def __init__(self, train) -> None:
         self.pmodel = PopularRecommender(days=30, dt_column="last_watch_dt")
-        self.pmodel.fit(TRAIN)
+        self.pmodel.fit(train)
 
-    def get_reco(self, user_id):
+    def get_reco(self, user_id) -> list:
         return list(self.pmodel.recommend(users=[user_id], N=10)[0])
 
 
-def get_models() -> dict:
-    return {"first_try": FirstTry, "popular_model": PopularModel}
+ALL_MODELS = {'first_try': FirstTry(), 'popular_model': PopularModel(TRAIN)}
+
+
+def get_models() -> tp.Dict[str, OurModels]:
+    return ALL_MODELS
