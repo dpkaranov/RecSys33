@@ -1,21 +1,21 @@
 # import libraries
 from typing import List
 
-from fastapi import APIRouter, Depends, FastAPI, HTTPException
+from fastapi import APIRouter, Depends, FastAPI
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from pydantic import BaseModel
 
 from service.api.auth import is_actual_credentials
 from service.api.exceptions import (
+    ModelInitializationError,
     ModelNotFoundError,
     UnauthorizedError,
     UserNotFoundError,
-    ModelInitializationError,
 )
 from service.log import app_logger
 from service.models import get_models
 
-# initialise main variables
+# initialize main variables
 BEARER = HTTPBearer()
 MODELS = get_models()
 router = APIRouter()
@@ -44,7 +44,6 @@ async def get_reco(
     user_id: int,
     token: HTTPAuthorizationCredentials = Depends(BEARER),
 ) -> RecoResponse:
-
     app_logger.info(f"Request for model: {model_name}, user_id: {user_id}")
     # checking token
     if not is_actual_credentials(token.credentials):
@@ -62,7 +61,7 @@ async def get_reco(
             error_message=f"Model {model_name} not found"
         )
     try:
-        reco_list = MODELS[model_name].get_reco(user_id)
+        reco_list = MODELS[model_name]().get_reco(user_id)
     except Exception:
         raise ModelInitializationError(
             error_message="Error on model initialization"

@@ -71,6 +71,7 @@ def test_get_reco_unauthorized(
     assert response.status_code == HTTPStatus.UNAUTHORIZED
     assert response.json()["errors"][0]["error_key"] == "user_not_authorized"
 
+
 def test_get_reco_without_headers(
     client: TestClient,
 ) -> None:

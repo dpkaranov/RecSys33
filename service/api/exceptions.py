@@ -49,6 +49,7 @@ class ModelNotFoundError(AppException):
     ):
         super().__init__(status_code, error_key, error_message, error_loc)
 
+
 class ModelInitializationError(AppException):
     def __init__(
         self,

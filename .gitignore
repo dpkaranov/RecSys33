@@ -68,6 +68,5 @@ venv.bak/
 
 # files
 .config
-.csv
 .pkl
 .h5

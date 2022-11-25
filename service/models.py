@@ -53,17 +53,12 @@ class PopularModel:
         TRAIN = pd.read_csv(
             "./service/data/interactions.csv", parse_dates=["last_watch_dt"]
         )
-        PMODEL = PopularRecommender(days=30, dt_column="last_watch_dt")
-        PMODEL.fit(TRAIN)
-
-        self.model = PMODEL
+        self.pmodel = PopularRecommender(days=30, dt_column="last_watch_dt")
+        self.pmodel.fit(TRAIN)
 
     def get_reco(self, user_id):
-        return list(self.model.recommend(users=[user_id], N=10)[0])
-
-
-MODELS = {"first_try": FirstTry(), "popular_model": PopularModel()}
+        return list(self.pmodel.recommend(users=[user_id], N=10)[0])
 
 
 def get_models() -> dict:
-    return MODELS
+    return {"first_try": FirstTry, "popular_model": PopularModel}
