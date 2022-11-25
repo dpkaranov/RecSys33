@@ -22,11 +22,6 @@ TRAIN = pd.read_csv(
                 parse_dates=["last_watch_dt"]
 )
 BEARER = HTTPBearer()
-'''
-FIRST = FirstTry()
-POPULAR = PopularModel(TRAIN)
-MODELS_KEYS = ['first_try', 'popular_model']
-'''
 MODELS = get_models()
 router = APIRouter()
 
