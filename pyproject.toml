@@ -18,6 +18,10 @@ uvloop = "^0.15.2"
 uvicorn = "^0.14.0"
 orjson = "^3.7.7"
 starlette = "^0.14.2"
+python-jose = {extras = ["cryptography"], version = "^3.3.0"}
+passlib = "^1.7.4"
+pyjwt = "^2.6.0"
+pandas = "^1.5.1"
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.2.4"

@@ -1,11 +1,12 @@
 import time
 
-from fastapi import FastAPI, Request
+from fastapi import FastAPI
 from starlette.middleware.base import (
     BaseHTTPMiddleware,
     RequestResponseEndpoint,
 )
 from starlette.middleware.cors import CORSMiddleware
+from starlette.requests import Request
 from starlette.responses import Response
 
 from service.log import access_logger, app_logger
