@@ -3,8 +3,8 @@ import typing as tp
 from http import HTTPStatus
 
 import orjson
-from fastapi.responses import JSONResponse
 from pydantic import BaseModel
+from starlette.responses import JSONResponse
 
 from service.models import Error
 
