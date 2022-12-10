@@ -1,18 +1,16 @@
 import random
-import dill
-import pickle
 import typing as tp
 from itertools import cycle, islice
 
+import dill
 import pandas as pd
-from rectools import Columns
 from pydantic import BaseModel
 
 from service.knn.userknn import UserKnn
 
 TRAIN = pd.read_csv(
-                "./service/data/interactions.csv",
-                parse_dates=["last_watch_dt"]
+    "./service/data/interactions.csv",
+    parse_dates=["last_watch_dt"]
 )
 
 
@@ -87,10 +85,8 @@ class UserKNNModelOnline(OurModels):
             recs = list(self.model.predict(data)['item_id'])
             if len(recs) == 10:
                 return recs
-            else:
-                return self.popular
-        else:
-            return self.popular
+        return self.popular
+
 
 class UserKNNModelOffline(OurModels):
     def __init__(self, data_path) -> None:
@@ -102,17 +98,17 @@ class UserKNNModelOffline(OurModels):
 
     def get_reco(self, user_id) -> list:
         recs = self.recs.get(user_id)
-        if recs != None:
+        if recs is not None:
             return recs
-        else:
-            return self.popular
+        return self.popular
 
 
-ALL_MODELS = {'first_try': FirstTry(), 
-              'popular_model': PopularModel(TRAIN), 
-              'userknn_model': UserKNNModelOnline(model_path='service/knn/bm25.dill'),
-              'userknn_model_offline': UserKNNModelOffline(data_path='service/knn/all_alg1.dill')
-}
+ALL_MODELS = {'first_try': FirstTry(),
+              'popular_model': PopularModel(TRAIN),
+              'userknn_model': UserKNNModelOnline(
+    model_path='service/knn/bm25.dill'),
+    'userknn_model_offline': UserKNNModelOffline(
+    data_path='service/knn/all_alg1.dill')}
 
 
 def get_models() -> tp.Dict[str, OurModels]:

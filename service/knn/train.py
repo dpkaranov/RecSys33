@@ -1,15 +1,19 @@
-import pandas as pd
-import numpy as np
-import scipy as sp
-
-from rectools import Columns
-from rectools.model_selection import TimeRangeSplit
-from rectools.metrics import Precision, Recall, MeanInvUserFreq, Serendipity, MAP, calc_metrics
-from implicit.nearest_neighbours import CosineRecommender, TFIDFRecommender, BM25Recommender
-from tqdm.auto import tqdm
 import datetime
 
-from userknn import UserKnn
+import pandas as pd
+from implicit.nearest_neighbours import TFIDFRecommender
+from rectools import Columns
+from rectools.metrics import (
+    MAP,
+    MeanInvUserFreq,
+    Precision,
+    Recall,
+    Serendipity,
+    calc_metrics,
+)
+from rectools.model_selection import TimeRangeSplit
+
+from service.knn.userknn import UserKnn
 
 metrics = {
     "prec@10": Precision(k=10),
@@ -22,14 +26,15 @@ metrics = {
 interactions = pd.read_csv('service/data/interactions.csv')
 
 interactions.rename(columns={'last_watch_dt': Columns.Datetime,
-                              'total_dur': Columns.Weight}, 
-                      inplace=True) 
+                             'total_dur': Columns.Weight},
+                    inplace=True)
 interactions['datetime'] = pd.to_datetime(interactions['datetime'])
 
-#Кусок кода, позволяющий выбрат данные за месяц, два и т.д.
+# Кусок кода, позволяющий выбрат данные за месяц, два и т.д.
 start = datetime.datetime(2021, 8, 12)
 end = datetime.datetime(2021, 8, 22)
-date_mask = (interactions['datetime'] >= start) & (interactions['datetime'] <= end)
+date_mask = (interactions['datetime'] >= start) & (
+    interactions['datetime'] <= end)
 dates = interactions['datetime'][date_mask]
 interactions = interactions.iloc[dates.index]
 
@@ -39,13 +44,13 @@ print(f"min date in interactions: {min_date}")
 print(f"max date in interactions: {max_date}")
 print(f"number of days in data: {(max_date - min_date).days}")
 
-#Задание параметров кросс-валидации
+# Задание параметров кросс-валидации
 n_folds = 1
 unit = "D"
 n_units = 5
 
 last_date = interactions[Columns.Datetime].max().normalize()
-start_date = last_date - pd.Timedelta(n_folds * n_units + 1, unit=unit)  
+start_date = last_date - pd.Timedelta(n_folds * n_units + 1, unit=unit)
 print(f"Start date and last date of the test fold: {start_date, last_date}")
 
 periods = n_folds + 1
@@ -56,8 +61,9 @@ print(
     f"periods: {periods}\n"
     f"freq: {freq}\n"
 )
-    
-date_range = pd.date_range(start=start_date, periods=periods, freq=freq, tz=last_date.tz)
+
+date_range = pd.date_range(
+    start=start_date, periods=periods, freq=freq, tz=last_date.tz)
 print(f"Test fold borders: {date_range.values.astype('datetime64[D]')}")
 
 # generator of folds
@@ -80,7 +86,7 @@ for i_fold, (train_ids, test_ids, fold_info) in enumerate(fold_iterator):
     df_test = interactions.iloc[test_ids][Columns.UserItem].copy()
 
     catalog = df_train[Columns.Item].unique()
-    
+
     model = UserKnn(model=TFIDFRecommender(), N_users=20)
     model.fit(df_train)
 
@@ -99,5 +105,5 @@ for i_fold, (train_ids, test_ids, fold_info) in enumerate(fold_iterator):
     print(fold)
     results.append(fold)
 
-model_for_save = results[-1]['model']
-model_for_save.save()
+    if i_fold == n_folds:
+        model.save('tfidf.dill')
