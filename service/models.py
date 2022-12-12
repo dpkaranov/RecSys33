@@ -6,7 +6,13 @@ import dill
 import pandas as pd
 from pydantic import BaseModel
 
+from service.data_load import check_local_data, download_data
 from service.knn.userknn import UserKnn
+
+if check_local_data():
+    print("downloading data")
+    download_data()
+    print('loaded')
 
 TRAIN = pd.read_csv(
     "./service/data/interactions.csv",
@@ -76,15 +82,21 @@ class UserKNNModelOnline(OurModels):
         self.model.load(model_path)
         self.model.prepare()
 
-        with open('service/knn/popular.dill', "rb") as f:
+        with open('service/data/popular.dill', "rb") as f:
             self.popular = dill.load(f)
+
+    def _postproc(self, recs) -> list:
+        if len(recs) == 0:
+            return self.popular
+        if len(recs) < 10:
+            return list(set(recs) | set(self.popular))[:10]
+        return recs
 
     def get_reco(self, user_id) -> list:
         data = TRAIN.loc[TRAIN['user_id'] == int(user_id)]
         if user_id in self.model.users_mapping:
             recs = list(self.model.predict(data)['item_id'])
-            if len(recs) == 10:
-                return recs
+            return self._postproc(recs)
         return self.popular
 
 
@@ -93,7 +105,7 @@ class UserKNNModelOffline(OurModels):
         with open(data_path, "rb") as f:
             self.recs = dill.load(f)
 
-        with open('service/knn/popular.dill', "rb") as f:
+        with open('service/data/popular.dill', "rb") as f:
             self.popular = dill.load(f)
 
     def get_reco(self, user_id) -> list:
@@ -106,9 +118,9 @@ class UserKNNModelOffline(OurModels):
 ALL_MODELS = {'first_try': FirstTry(),
               'popular_model': PopularModel(TRAIN),
               'userknn_model': UserKNNModelOnline(
-    model_path='service/knn/bm25.dill'),
+    model_path='service/data/knn/tfidf.dill'),
     'userknn_model_offline': UserKNNModelOffline(
-    data_path='service/knn/all_alg1.dill')}
+    data_path='service/data/knn/all_alg3.dill')}
 
 
 def get_models() -> tp.Dict[str, OurModels]:
