@@ -4,9 +4,11 @@ from itertools import cycle, islice
 
 import pandas as pd
 from pydantic import BaseModel
+import dill
+from random import shuffle
 
 TRAIN = pd.read_csv(
-                "./service/data/interactions.csv",
+                "./data/interactions.csv",
                 parse_dates=["last_watch_dt"]
 )
 
@@ -67,7 +69,27 @@ class PopularModel(OurModels):
         return list(self.pmodel.recommend(users=[user_id], N=10)[0])
 
 
-ALL_MODELS = {'first_try': FirstTry(), 'popular_model': PopularModel(TRAIN)}
+class LightFmOffline(OurModels):
+    def __init__(self) -> None:
+        with open('./models/lightfm_preds.dill', 'rb') as file:
+            self.model = dill.load(file)
+        self.submodel = PopularModel(TRAIN)
+        self.popular_reco = self.submodel.get_reco(1)
+
+    def get_reco(self, user_id) -> list:
+        try:
+            val = self.model[user_id]
+            if len(val) < 10:
+                val += self.popular_reco
+                val = list(set(val))
+                return val[:10]
+            else:
+                return val
+        except:
+            return self.popular_reco
+
+
+ALL_MODELS = {'first_try': FirstTry(), 'popular_model': PopularModel(TRAIN), 'lightfm_model': LightFmOffline()}
 
 
 def get_models() -> tp.Dict[str, OurModels]:
