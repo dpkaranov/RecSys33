@@ -2,10 +2,9 @@ import random
 import typing as tp
 from itertools import cycle, islice
 
+import dill
 import pandas as pd
 from pydantic import BaseModel
-import dill
-from random import shuffle
 
 TRAIN = pd.read_csv(
                 "./data/interactions.csv",
@@ -77,19 +76,21 @@ class LightFmOffline(OurModels):
         self.popular_reco = self.submodel.get_reco(1)
 
     def get_reco(self, user_id) -> list:
-        try:
+        if user_id in self.model.keys():
             val = self.model[user_id]
             if len(val) < 10:
                 val += self.popular_reco
                 val = list(set(val))
-                return val[:10]
-            else:
-                return val
-        except:
-            return self.popular_reco
+        else:
+            val = self.popular_reco
+        return val[:10]
 
 
-ALL_MODELS = {'first_try': FirstTry(), 'popular_model': PopularModel(TRAIN), 'lightfm_model': LightFmOffline()}
+ALL_MODELS = {
+                'first_try': FirstTry(),
+                'popular_model': PopularModel(TRAIN),
+                'lightfm_model': LightFmOffline()
+}
 
 
 def get_models() -> tp.Dict[str, OurModels]:
